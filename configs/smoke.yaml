@@ -1,0 +1,28 @@
+paper:
+  slug: domain-adaptation-for-head-pose-estimation-using-relative-pose-consist
+  title: "HPE RCR smoke"
+device: cuda
+data:
+  root: ../../datasets/300w
+  source_ratio: 0.6
+  max_samples: 80
+  num_workers: 0
+model:
+  pretrained: true
+train:
+  epochs: 2
+  batch_size: 8
+  lr: 0.0001
+  weight_decay: 0.0001
+  lambda_max: 0.2
+  weighted_rcr: true
+  grad_clip: 5.0
+  max_steps: 20
+  seed: 42
+eval:
+  batch_size: 8
+paths:
+  checkpoint_dir: outputs/checkpoints
+  log_dir: outputs/logs
+  pred_dir: outputs/predictions
+  figure_dir: outputs/figures

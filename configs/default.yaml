@@ -1,0 +1,27 @@
+paper:
+  slug: domain-adaptation-for-head-pose-estimation-using-relative-pose-consist
+  title: "Domain Adaptation for Head Pose Estimation Using Relative Pose Consistency"
+  doi: "10.1109/TBIOM.2023.3237039"
+device: cuda
+data:
+  root: ../../datasets/300w
+  source_ratio: 0.6
+  num_workers: 2
+model:
+  pretrained: true
+train:
+  epochs: 25
+  batch_size: 32
+  lr: 0.0001
+  weight_decay: 0.0001
+  lambda_max: 0.2
+  weighted_rcr: true
+  grad_clip: 5.0
+  seed: 42
+eval:
+  batch_size: 64
+paths:
+  checkpoint_dir: outputs/checkpoints
+  log_dir: outputs/logs
+  pred_dir: outputs/predictions
+  figure_dir: outputs/figures
