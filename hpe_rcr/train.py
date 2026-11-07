@@ -129,7 +129,7 @@ def main(argv=None):
     src_rows, tgt_rows, test_rows = split_source_target(
         rows, source_ratio=float(cfg["data"].get("source_ratio", 0.6)), seed=int(cfg["train"].get("seed", 42))
     )
-    # Checkpoints are selected on held-out source images, never on the test split
+    # Held-out source images are only monitored; Sec. IV-B uses no early stopping
     n_val = max(1, len(src_rows) // 10)
     val_rows, src_rows = src_rows[:n_val], src_rows[n_val:]
     print(
@@ -234,9 +234,8 @@ def main(argv=None):
             f"[{row['sec']:.1f}s]",
             flush=True,
         )
-        if metrics["MAE"] < best["MAE"]:
-            best = {**metrics, "epoch": epoch + 1}
-            torch.save({"model": model.state_dict(), "best": best, "cfg": cfg}, Path(cfg["paths"]["checkpoint_dir"]) / "best.pt")
+        best = {**metrics, "epoch": epoch + 1}
+        torch.save({"model": model.state_dict(), "best": best, "cfg": cfg}, Path(cfg["paths"]["checkpoint_dir"]) / "best.pt")
         (Path(cfg["paths"]["log_dir"]) / "train_history.json").write_text(json.dumps(history, indent=2))
         torch.save({"model": model.state_dict(), "history": history, "best": best}, Path(cfg["paths"]["checkpoint_dir"]) / "last.pt")
         if max_steps is not None and global_step >= int(max_steps):
