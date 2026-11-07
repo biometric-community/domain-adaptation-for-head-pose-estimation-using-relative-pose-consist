@@ -19,8 +19,6 @@ def test_mae_is_the_mean_of_the_three_angles(report):
 
 
 def test_published_values(report, targets):
-    if targets["published_values"] is None:
-        pytest.skip("paper tables not recorded in tests/paper_targets.yaml")
     expected = targets["published_values"]
     assert ours(report) == pytest.approx(
         [expected["mae"], expected["pitch"], expected["yaw"], expected["roll"]], abs=1.0

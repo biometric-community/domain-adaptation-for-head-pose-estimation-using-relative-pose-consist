@@ -116,10 +116,14 @@ def test_consistency_penalises_an_inconsistent_prediction():
     assert loss.item() == pytest.approx(25.0)
 
 
-def test_rcr_weights_favour_non_frontal_poses():
-    w = rcr_weights(torch.tensor([[0.0, 1.0, 0.0], [0.0, 60.0, 0.0]]))
-    assert w[1] > w[0]
-    assert w.mean().item() == pytest.approx(1.0)
+def test_rcr_weights_follow_eq_5():
+    """Each angle is weighted on its own, from the batch's mean and standard deviation."""
+    pose = torch.tensor([[-30.0, 5.0, 1.0], [0.0, 0.0, 0.0], [10.0, -5.0, -1.0], [40.0, 1.0, 3.0]])
+    z = (pose - pose.mean(dim=0)) / pose.std(dim=0)
+    expected = 1.0 - torch.exp(-(z**2))
+    weights = rcr_weights(pose)
+    assert weights.shape == pose.shape
+    assert torch.allclose(weights / weights.sum(dim=0), expected / expected.sum(dim=0), atol=1e-4)
 
 
 def test_target_batches_do_not_change_source_batch_norm():
@@ -136,6 +140,11 @@ def test_splits_are_disjoint():
     source, target, test = split_source_target(rows)
     names = [{r["image"] for r in part} for part in (source, target, test)]
     assert not (names[0] & names[1] or names[0] & names[2] or names[1] & names[2])
+
+
+def test_the_model_from_the_end_of_training_is_reported():
+    """Sec. IV-B: the performance at the end of training is reported, no early stopping."""
+    assert 'metrics["MAE"] < best["MAE"]' not in (ROOT / "hpe_rcr" / "train.py").read_text(encoding="utf-8")
 
 
 def test_checkpoints_are_not_selected_on_the_test_split():

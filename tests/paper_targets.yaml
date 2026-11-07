@@ -2,7 +2,5 @@
 # Consistency", IEEE TBIOM 5(3), 2023, doi:10.1109/TBIOM.2023.3237039.
 source: doi:10.1109/TBIOM.2023.3237039
 
-# Fill in from the paper's tables to enable test_published_values. Only the abstract
-# was available when this suite was written, so no values are recorded here.
-# Shape: {mae: 0.0, pitch: 0.0, yaw: 0.0, roll: 0.0} in degrees.
-published_values: null
+# Table II, RCRw (proposed), SynHead++ to Biwi+, degrees.
+published_values: {mae: 3.85, pitch: 4.79, yaw: 3.92, roll: 2.85}
