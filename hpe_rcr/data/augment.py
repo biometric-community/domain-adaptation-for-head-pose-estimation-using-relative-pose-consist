@@ -32,7 +32,7 @@ def augment_pair(
     after applying sign flips to the base pose.
     Also returns sign tensors sa, sb for (pitch,yaw,roll).
     """
-    # We return views as PIL; caller converts. Relative: flip negates yaw&roll; rotation adds to roll.
+    # We return views as PIL; caller converts. Relative: flip negates yaw&roll; rotation shifts roll.
     def one_view():
         im = img.copy()
         # scale / crop-ish via resize then random crop
@@ -59,7 +59,8 @@ def augment_pair(
         im = TF.rotate(im, rot, fill=0)
         # signs and delta relative to original pose label
         sign = torch.tensor([1.0, -1.0 if flip else 1.0, -1.0 if flip else 1.0])
-        delta = torch.tensor([0.0, 0.0, rot])  # rotation adds to roll
+        # TF.rotate turns the image counter-clockwise, which lowers the roll label
+        delta = torch.tensor([0.0, 0.0, -rot])
         return im, sign, delta
 
     a, sa, da = one_view()

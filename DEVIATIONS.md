@@ -7,6 +7,7 @@
 | D3 | 35k / 16k iter schedules, batch 84 | Epoch-based Adam, batch 32, 30 epochs | Small 300W (~600 imgs) |
 | D4 | Exact MoCo color/blur code | torchvision/PIL jitter + blur | Functional equivalent |
 | D5 | 10-seed mean±std on Biwi+ | Single-seed hold-out MAE | Proxy protocol |
+| D6 | Fixed iteration schedule | Best epoch by MAE on 10% of source held out from training | Test split stays unseen until `eval.py` |
 
 ## Taken from paper
 

@@ -129,13 +129,20 @@ def main(argv=None):
     src_rows, tgt_rows, test_rows = split_source_target(
         rows, source_ratio=float(cfg["data"].get("source_ratio", 0.6)), seed=int(cfg["train"].get("seed", 42))
     )
-    print(f"[data] total={len(rows)} source={len(src_rows)} target={len(tgt_rows)} test={len(test_rows)}", flush=True)
+    # Checkpoints are selected on held-out source images, never on the test split
+    n_val = max(1, len(src_rows) // 10)
+    val_rows, src_rows = src_rows[:n_val], src_rows[n_val:]
+    print(
+        f"[data] total={len(rows)} source={len(src_rows)} val={len(val_rows)} "
+        f"target={len(tgt_rows)} test={len(test_rows)}",
+        flush=True,
+    )
     print(f"[device] {device}", flush=True)
 
     print("[data] preloading PIL…", flush=True)
     src_imgs = preload_pils(src_rows)
     tgt_imgs = preload_pils(tgt_rows)
-    test_imgs = preload_pils(test_rows)
+    val_imgs = preload_pils(val_rows)
 
     bs = int(cfg["train"]["batch_size"])
     src_loader = DataLoader(
@@ -146,8 +153,8 @@ def main(argv=None):
         PathPoseDS(tgt_rows, tgt_imgs, False),
         batch_size=bs, shuffle=True, num_workers=0, drop_last=True, collate_fn=collate_idx,
     )
-    test_loader = DataLoader(
-        PathPoseDS(test_rows, test_imgs, True),
+    val_loader = DataLoader(
+        PathPoseDS(val_rows, val_imgs, True),
         batch_size=int(cfg["eval"].get("batch_size", 32)), shuffle=False, num_workers=0, collate_fn=collate_idx,
     )
 
@@ -218,7 +225,7 @@ def main(argv=None):
             if max_steps is not None and global_step >= int(max_steps):
                 break
 
-        metrics = run_eval(model, test_loader, test_imgs, device)
+        metrics = run_eval(model, val_loader, val_imgs, device)
         row = {"epoch": epoch + 1, "loss": running / max(n, 1), "lambda": lam, "sec": time.time() - t0, **metrics}
         history.append(row)
         print(
@@ -239,6 +246,7 @@ def main(argv=None):
         "best": best,
         "n_source": len(src_rows),
         "n_target": len(tgt_rows),
+        "n_val": len(val_rows),
         "n_test": len(test_rows),
         "device": str(device),
         "note": "300W landmark-derived poses; Biwi+/SynHead++ blocked — see DEVIATIONS.md",
